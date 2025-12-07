@@ -21,6 +21,8 @@ Dataset: UCI Student Performance (395 rows, 33 features)
 
 - Previous grades were the strongest predictors
 
+---
+
 ## Visuals
 
 Correlation Heatmap: [Correlation Heatmap](TestScorePlots/correlation_heatmap.png)
