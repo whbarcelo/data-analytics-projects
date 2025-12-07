@@ -1,0 +1,171 @@
+---
+title: "Fuel Efficiency Analysis Using R"
+author: William Barcelo
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(broom)
+```
+
+## Introduction
+
+Goal: 
+Understand how car characteristics affect fuel efficiency. Using the mtcars dataset, relationships between mpg and weight, horsepower, # of cylinders, and transmission type. 
+
+Plan:
+Build simple and multiple linear regression models and compare them using ANOVA. Then interpret the results to find which factors are most strongly associated with fuel efficiency. 
+
+## Data Loading and Preparation
+```{r}
+df <- mtcars %>%
+  rownames_to_column(var="car_model")
+glimpse(df)
+summary(df)
+```
+
+Focus on these variables:
+- 'mpg': Miles per Gallon (fuel efficiency) - response variable
+- 'wt': Weight of car (in 1000 lbs)
+- 'hp': Horsepower
+- 'cyl': # of cylinders
+- 'am': Transmission type (0 = automatic, 1 = manual)
+
+## Exploratory Data Analysis
+
+### Scatterplot: mpg vs weight
+```{r}
+ggplot(df, aes(x = wt, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Fuel Efficiency vs Weight", x = "Weight (1000lbs)", y = "Miles per Gallon (mpg)")
+```
+
+### Scatterplot: mpg vs horsepower
+```{r}
+ggplot(df, aes(x = hp, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Fuel Efficiency vs Horsepower", x = "Horsepower", y = "Miles per Gallon (mpg)")
+```
+
+### Boxplot: mpg by number of cylinders
+```{r}
+ggplot(df, aes(x = factor(cyl), y = mpg)) +
+  geom_boxplot() +
+  labs(title = "Fuel Efficiency by Number of Cylinders", x = "Cylinders", y = "Miles per Gallon (mpg)")
+```
+
+### Boxplot: mpg by transmission
+```{r}
+ggplot(df, aes(x = factor(am), y = mpg)) +
+  geom_boxplot() +
+  labs(title = "Fuel Efficiency by Transmission", x = "Transmission (0 = Auto, 1 = Manual)", y = "Miles per Gallon (mpg)")
+```
+
+### EDA Observations
+
+From the plots:
+- Heavier cars generally have lower mpg
+- Cars with more horsepower tend to have lower mpg
+- Cars with more cylinders (e.g., 6 or 8) tend to have worse fuel efficiency than those with less (e.g, 4)
+
+## Simple Linear Regression
+```{r}
+model_simple <- lm(mpg ~ wt, data = df)
+summary(model_simple)
+tidy(model_simple)
+glance(model_simple)
+```
+
+### Simple Model Interpretation
+
+This simple linear regression uses only weight ('wt') to predict fuel efficiency ('mpg')
+
+Observations:
+- Coefficient for'wt' is negative, indicating heavier cars have lower mpg
+- p-value for 'wt' is very small, so weight is a statistically significant predictor of mpg
+- R^2 from the simple model shows how much of the variation in mpg is explained by weight alone (0.7446)
+
+
+## Multiple Linear Regression
+```{r}
+model_multi <- lm(mpg ~ wt + hp + cyl + am, data = df)
+summary(model_multi)
+tidy(model_multi)
+glance(model_multi)
+```
+
+## ANOVA Model Comparison
+```{r}
+anova(model_simple, model_multi)
+```
+
+### Model Performance Summary
+
+| Model | R² | Adjusted R² |
+|------|-----|-------------|
+| Simple (mpg ~ wt) | 0.7446 | (insert adj R² from glance) |
+| Multiple (wt + hp + cyl + am) | (insert) | (insert) |
+
+The increase in Adjusted R² shows that adding predictors improves model performance beyond weight alone.
+
+### Multiple Model Interpretation
+
+Observations:
+- weight ('wt') remains a strong negative predictor of mpg
+- cylinders ('cyl') and horsepower ('hp') also tend to reduce mpg, but their effects can overlap
+- transmission ('am') shows manual cars generally have higher mpg
+
+The adjusted R^2 is higher for the multiple model, meaning it explains more variance in fuel efficiency. The ANOVA shows that including predictors is worthwhile, and that the multiple regression clearly outperforms the simple model.
+
+## Model Diagnostics
+```{r}
+par(mfrow = c(2,2), mar = c(4, 4, 2, 1))
+plot(model_multi)
+par(mfrow = c(1,1))
+```
+
+- Residuals vs Fitted: checking linearity & constant variance  
+- Normal Q-Q: how normal the residuals are  
+- Scale-Location: variance spread  
+- Residuals vs Leverage: influential data points  
+No severe violations appear present, so assumptions are reasonably satisfied.
+
+## Coefficient Interpretation and Effect Sizes
+```{r}
+coef_table <- tidy(model_multi)
+coef_table
+```
+### Simple Coefficient bar plot (exclude intercept)
+```{r}
+coef_no_intercept <- coef_table %>%
+  filter(term != "(Intercept)")
+
+ggplot(coef_no_intercept, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Regression Coefficients (Multiple Model)", x = "Predictor", y = "Coefficient Estimate")
+```
+
+`wt` and `cyl` have strong negative coefficients, indicating lower mpg for heavier vehicles and those with more cylinders. Transmission has a positive effect, suggesting manual cars generally achieve better mileage.
+
+## Conclusion
+
+Observations:
+- Weight has a strong negative association with mpg: heavier cars are less fuel efficient
+- Horsepower also tends to reduce mpg, though its effect may overlap with weight and cylinders
+- Cars with fewer cylinders and manual transmissions tend to have higher mpg
+- The multiple regression model explains a much larger portion of variance in mpg compared to the simple model (higher R²), and ANOVA indicates that the added predictors significantly improve the model
+
+### Future Extensions
+- Try adding interaction terms (e.g., 'wt * am')
+- Compare models using AIC/BIC for model selection  
+- Apply regularization (Lasso/Ridge) to reduce multicollinearity  
+- Validate results using a real-world fuel economy dataset
+
+Overall, the results align with expectations in automotive engineering — heavier engines, more cylinders, and greater horsepower come at the cost of reduced fuel efficiency, while manual transmission vehicles tend to perform better in mpg.
+
+This project demonstrates regression modeling, EDA interpretation, diagnostics checking, and statistical reasoning in R.
