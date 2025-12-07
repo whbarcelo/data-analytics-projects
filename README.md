@@ -9,8 +9,11 @@ Each project includes code, visualizations, and written analysis interpreting re
 
 ### 1. Student Exam Score Prediction – Python (scikit-learn)
 Prediction model using the UCI Student Performance dataset.
-Folder: [Project Folder](student-score-prediction-python/)
-Notebook: [Jupyter Notebook](student-score-prediction-python/TestScoresProjectFinal.ipynb)
+
+Folder: [Project Folder](Projects/)
+
+Notebook: [Jupyter Notebook](Projects/TestScoresProjectFinal.ipynb)
+
 Highlights:
 - Built regression models to predict final exam score ("G3")
 - Improved model performance from R² = -0.018 → 0.708
