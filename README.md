@@ -23,8 +23,10 @@ Highlights:
 ---
 ### 2. Fuel Efficiency Regression Analysis – R
 Statistical modeling using the 'mtcars' dataset.
-Folder: Projects
-File: FuelEfficiencyProject.Rmd
+
+Folder: [Project Folder](Projects/)
+
+File: [R Markdown](Projects/FuelEfficiencyProject.Rmd)
 
 Highlights:
 - Ran EDA to study relationship between mpg & vehicle traits
@@ -36,7 +38,9 @@ Highlights:
 
 ## Tools and Skills
 Languages: Python, R
+
 Libraries: Pandas, NumPy, Scikit-learn, tidyverse, ggplot2, Matplotlib, Seaborn
+
 Techniques: Regression modeling, EDA, feature interpretation, diagnostics, ANOVA 
 
 Feel free to explore the project folders above!
