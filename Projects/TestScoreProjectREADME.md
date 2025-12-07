@@ -20,3 +20,13 @@ Dataset: UCI Student Performance (395 rows, 33 features)
 | Multiple Regression | 0.708 |
 
 - Previous grades were the strongest predictors
+
+## Visuals
+
+Correlation Heatmap: [Correlation Heatmap](TestScorePlots/correlation_heatmap.png)
+
+Study Time vs Final Grade: [Study Time vs Final Grade](TestScorePlots/StudyTimevsFinalGrade.png)
+
+Feature Importance: [Feature Importance](TestScorePlots/FeatureImportance.png)
+
+Actual vs Predicted: [Actual vs Predicted](TestScorePlots/ActualvsPredicted.png)
