@@ -23,12 +23,12 @@ Dataset: 'mtcars' (built-in R dataset)
 
 ## Visuals
 
-MPG vs Weight: [MPG vs Weight](FuelEfficiencyPlots/FuelEfficiencyVSWeight.png)
+MPG vs Weight: [MPG vs Weight](fuel_efficiency_analysis_plots/FuelEfficiencyVSWeight.png)
 
-MPG vs HP: [MPG vs HP](FuelEfficiencyPlots/FuelEfficiencyVSHorsepower.png)
+MPG vs HP: [MPG vs HP](fuel_efficiency_analysis_plots/FuelEfficiencyVSHorsepower.png)
 
-MPG by # of Cylinders: [MPG by # of Cylinders](FuelEfficiencyPlots/FuelEfficiencybyNumberofCylinders.png)
+MPG by # of Cylinders: [MPG by # of Cylinders](fuel_efficiency_analysis_plots/FuelEfficiencybyNumberofCylinders.png)
 
-MPG by Transmission: [MPG by Transmission](FuelEfficiencyPlots/FuelEfficiencybyTransmission.png)
+MPG by Transmission: [MPG by Transmission](fuel_efficiency_analysis_plots/FuelEfficiencybyTransmission.png)
 
-Regression Coefficients: [Regression Coefficients](FuelEfficiencyPlots/RegressionCoefficients.png)
+Regression Coefficients: [Regression Coefficients](fuel_efficiency_analysis_plots/RegressionCoefficients.png)
