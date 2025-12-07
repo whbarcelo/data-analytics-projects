@@ -25,10 +25,10 @@ Dataset: UCI Student Performance (395 rows, 33 features)
 
 ## Visuals
 
-Correlation Heatmap: [Correlation Heatmap](TestScorePlots/correlation_heatmap.png)
+Correlation Heatmap: [Correlation Heatmap](student_scores_regression_plots/correlation_heatmap.png)
 
-Study Time vs Final Grade: [Study Time vs Final Grade](TestScorePlots/StudyTimevsFinalGrade.png)
+Study Time vs Final Grade: [Study Time vs Final Grade](student_scores_regression_plots/StudyTimevsFinalGrade.png)
 
-Feature Importance: [Feature Importance](TestScorePlots/FeatureImportance.png)
+Feature Importance: [Feature Importance](student_scores_regression_plots/FeatureImportance.png)
 
-Actual vs Predicted: [Actual vs Predicted](TestScorePlots/ActualvsPredicted.png)
+Actual vs Predicted: [Actual vs Predicted](student_scores_regression_plots/ActualvsPredicted.png)
