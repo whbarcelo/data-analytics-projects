@@ -12,7 +12,7 @@ Prediction model using the UCI Student Performance dataset.
 
 Folder: [Project Folder](Projects/)
 
-Notebook: [Jupyter Notebook](Projects/TestScoresProjectFinal.ipynb)
+Notebook: [Jupyter Notebook](Projects/student_scores_regression.ipynb)
 
 Highlights:
 - Built regression models to predict final exam score ("G3")
@@ -26,7 +26,7 @@ Statistical modeling using the 'mtcars' dataset.
 
 Folder: [Project Folder](Projects/)
 
-File: [R Markdown](Projects/FuelEfficiencyProject.Rmd)
+File: [R Markdown](Projects/fuel_efficiency_analysis.Rmd)
 
 Highlights:
 - Ran EDA to study relationship between mpg & vehicle traits
