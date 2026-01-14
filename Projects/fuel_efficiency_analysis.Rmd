@@ -107,8 +107,8 @@ anova(model_simple, model_multi)
 
 | Model | R² | Adjusted R² |
 |------|-----|-------------|
-| Simple (mpg ~ wt) | 0.7446 | (insert adj R² from glance) |
-| Multiple (wt + hp + cyl + am) | (insert) | (insert) |
+| Simple (mpg ~ wt) | 0.7528328	 | 0.7445939 |
+| Multiple (wt + hp + cyl + am) | 0.8490314 | 0.8266657 |
 
 The increase in Adjusted R² shows that adding predictors improves model performance beyond weight alone.
 
