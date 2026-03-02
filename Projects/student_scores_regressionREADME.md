@@ -19,7 +19,7 @@ Dataset: UCI Student Performance (395 rows, 33 features)
 | Simple Regression | -0.048 |
 | Multiple Regression | 0.708 |
 
-- Previous grades were the strongest predictors
+- Previous grades and extra academic support were the strongest predictors
 
 ---
 
