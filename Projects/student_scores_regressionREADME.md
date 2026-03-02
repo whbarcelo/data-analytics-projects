@@ -16,7 +16,7 @@ Dataset: UCI Student Performance (395 rows, 33 features)
 ## Results
 | Model | R² Score |
 |------|----------|
-| Simple Regression | -0.018 |
+| Simple Regression | -0.048 |
 | Multiple Regression | 0.708 |
 
 - Previous grades were the strongest predictors
