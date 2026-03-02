@@ -18,7 +18,7 @@ Highlights:
 - Built regression models to predict final exam score ("G3")
 - Improved model performance from R² = -0.048 → 0.708
 - Used EDA, visualization (heatmaps, scatterplots), and feature engineering
-- Identified strongest predictors — previous grades were most important
+- Identified strongest predictors — previous grades and extra academic support were most important
 
 ---
 ### 2. Fuel Efficiency Regression Analysis – R
