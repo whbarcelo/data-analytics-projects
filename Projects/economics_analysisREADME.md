@@ -42,6 +42,9 @@ Dataset: FRED (CPI, GDP, Unemployment, Federal Funds Rate) + Yahoo Finance S&P 5
 
 ## Visuals
 Average Monthly Return by Sector and Year: [Sector Returns by Year](economics_analysis_plots/AverageMonthlyReturnbySectorandYear.jpg)
+
 Technology Returns vs CPI: [Tech Returns vs CPI](economics_analysis_plots/TechnologySectorReturnsvsCPIbyQuarter.jpg)
+
 Energy Returns vs Rolling GDP: [Energy Returns vs GDP](economics_analysis_plots/EnergySectorReturnsvsRollingGDPGrowth.jpg)
+
 Sector Risk-Adjusted Returns by Economic Cycle: [Risk-Adjusted Returns](economics_analysis_plots/SectorRisk-AdjustedReturnsbyEconomicCycle.jpg)
