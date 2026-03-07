@@ -7,35 +7,8 @@ Each project includes code, visualizations, and written analysis interpreting re
 ---
 ## Projects
 
-### 1. Student Exam Score Prediction – Python (scikit-learn)
-Prediction model using the UCI Student Performance dataset.
-
-Folder: [Project Folder](Projects/)
-
-Notebook: [Jupyter Notebook](Projects/student_scores_regression.ipynb)
-
-Highlights:
-- Built regression models to predict final exam score ("G3")
-- Improved model performance from R² = -0.048 → 0.708
-- Used EDA, visualization (heatmaps, scatterplots), and feature engineering
-- Identified strongest predictors — previous grades and extra academic support were most important
-
 ---
-### 2. Fuel Efficiency Regression Analysis – R
-Statistical modeling using the 'mtcars' dataset.
-
-Folder: [Project Folder](Projects/)
-
-File: [R Markdown](Projects/fuel_efficiency_analysis.Rmd)
-
-Highlights:
-- Ran EDA to study relationship between mpg & vehicle traits
-- Built simple vs multiple regression models; Adjusted R² improved
-- Compared models with ANOVA and evaluated diagnostic plots
-- Interpreted coefficients and visualized predictor influence
-
----
-### 3. Economic Indicators and S&P 500 Sector Analysis - SQL + Python
+### 1. Economic Indicators and S&P 500 Sector Analysis - SQL + Python
 SQL-based analysis exploring the relationship between macroeconomic indicators and S&P 500 sector performance from 2000 to 2025.
 
 Folder: [Project Folder](Projects/)
@@ -51,12 +24,40 @@ Highlights:
 - Visualized results using Matplotlib
 
 ---
+### 2. Boston Marathon Qualification Analysis – R + ggplot2
+Analysis of Boston Marathon qualification trends across 1,081,649 runners from 762 qualifying races between 2022 and 2024.
 
+Folder: [Project Folder](Projects/)
+File: [R Markdown](Projects/marathon_qualification_analysis.rmd) | [PDF Report](Projects/marathon_qualification_analysis.pdf)
+
+Highlights:
+- Analyzed qualification rates and finish time trends across 532 races by year, gender, and age group
+- Identified top qualifying races among events with 500+ finishers; Highwayman Dash exceeded 75% qualification rate
+- Found the majority of non-qualifiers missed their standard by 30+ minutes, suggesting the BQ standard is a hard ceiling for most runners
+- Fit logistic regression models with AIC/chi-square comparison; added mixed effects model with random intercept for race (variance = 0.96)
+- Age × gender interaction was not statistically significant (p = 0.118), suggesting the age effect is consistent across genders
+- Final model achieved AUC of 0.569 using only demographic and temporal features, with target leakage avoided by excluding finish time
+
+---
+### 3. Student Exam Score Prediction – Python (scikit-learn)
+Prediction model using the UCI Student Performance dataset.
+
+Folder: [Project Folder](Projects/)
+
+Notebook: [Jupyter Notebook](Projects/student_scores_regression.ipynb)
+
+Highlights:
+- Built regression models to predict final exam score ("G3")
+- Improved model performance from R² = -0.048 → 0.708
+- Used EDA, visualization (heatmaps, scatterplots), and feature engineering
+- Identified strongest predictors — previous grades and extra academic support were most important
+
+---
 ## Tools and Skills
 Languages: Python, R, SQL
 
-Libraries: Pandas, NumPy, Scikit-learn, tidyverse, ggplot2, Matplotlib, Seaborn, SQLite3
+Libraries: Pandas, NumPy, Scikit-learn, tidyverse, ggplot2, lme4, knitr, Matplotlib, Seaborn, SQLite3
 
-Techniques: Regression modeling, EDA, feature interpretation, diagnostics, ANOVA, CTEs, window functions, multi-table JOINs, database design
+Techniques: Regression modeling, logistic regression, mixed effects models, EDA, feature interpretation, diagnostics, ROC/AUC evaluation, CTEs, window functions, multi-table JOINs, database design
 
 Feel free to explore the project folders above!
