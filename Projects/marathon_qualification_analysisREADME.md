@@ -44,6 +44,3 @@ Dataset: Kaggle (Race-level finisher results, race metadata, BAA qualification s
 ---
 ## Visuals
 Rmd Knit: [Marathon Qualification Analysis](Projects/marathon_qualification_analysis.pdf)
-How Close Were Non-Qualifiers?: [Non-Qualifier Proximity](visuals/NonQualifierProximity.jpg)  
-Predicted Qualification Probability by Age and Gender: [Predicted Probabilities](visuals/PredictedProbByAgeGender.jpg)  
-ROC Curve: [ROC Curve](visuals/ROCCurve.jpg)
