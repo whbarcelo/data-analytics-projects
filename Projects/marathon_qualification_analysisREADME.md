@@ -43,4 +43,4 @@ Dataset: Kaggle (Race-level finisher results, race metadata, BAA qualification s
 
 ---
 ## Visuals
-Rmd Knit: [Marathon Qualification Analysis](Projects/marathon_qualification_analysis.pdf)
+Rmd Knit: [Marathon Qualification Analysis](marathon_qualification_analysis.pdf)
