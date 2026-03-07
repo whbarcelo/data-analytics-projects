@@ -1,0 +1,581 @@
+---
+title: "Analysis of Boston Marathon Qualification Trends 2022–2024"
+author: "Will Barcelo"
+date: "2026-03-03"
+output:
+  pdf_document:
+    keep_tex: true
+header-includes:
+  - \usepackage{booktabs}
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(broom)
+library(broom.mixed)
+library(pROC)
+library(lme4)
+library(scales)
+library(knitr)
+
+bq_standards <- read_csv("BQStandards.csv")
+races        <- read_csv("Races.csv")
+results      <- read_csv("Results.csv")
+
+format_p <- function(x) {
+  case_when(
+    is.na(x) ~ NA_character_,
+    x < 0.001 ~ "<0.001",
+    TRUE ~ sprintf("%.3f", x)
+  )
+}
+```
+
+# Introduction
+
+The Boston Marathon is one of the most prestigious road races in the world. Unlike most marathons, entry is not first-come-first-served, runners must first meet strict qualifying standards set by the Boston Athletic Association (BAA), which vary by age and gender. Even meeting the standard is not always enough. In recent years, demand has been so high that runners needed to beat their standard by several additional minutes to secure a spot.
+
+This project analyzes over 1 million finisher results from 762 qualifying races held between 2022 and 2024 to answer three questions: How have qualification rates changed over time? Which demographics and race 
+characteristics are associated with qualifying? And how close are 
+non-qualifiers to the cutoff?
+
+# Data
+
+Three datasets were obtained from Kaggle: race-level results, race metadata, and BAA qualification standards by age and gender bracket. After filtering to races flagged as valid qualifying events and joining on age bracket and gender, the final dataset contains 1,081,649 runners across 532 races, with an overall qualification rate of 13.7%.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+races_valid <- races %>%
+  filter(Include == "Yes")
+results_full <- results %>%
+  inner_join(races_valid, by = c("Year", "Race"))
+
+results_full <- results_full %>%
+  mutate(`Age Bracket` = case_when(
+    Age < 35             ~ "Under 35",
+    Age >= 35 & Age < 40 ~ "35-39",
+    Age >= 40 & Age < 45 ~ "40-44",
+    Age >= 45 & Age < 50 ~ "45-49",
+    Age >= 50 & Age < 55 ~ "50-54",
+    Age >= 55 & Age < 60 ~ "55-59",
+    Age >= 60 & Age < 65 ~ "60-64",
+    Age >= 65 & Age < 70 ~ "65-69",
+    Age >= 70 & Age < 75 ~ "70-74",
+    Age >= 75 & Age < 80 ~ "75-79",
+    Age >= 80            ~ "80+"
+  ))
+
+results_full <- results_full %>%
+  left_join(bq_standards, by = c("Gender", "Age Bracket"))
+
+results_full <- results_full %>%
+  mutate(qualified = Finish <= Standard)
+
+results_full <- results_full %>%
+  filter(!is.na(qualified))
+```
+
+# Trends Over Time
+
+We begin by examining how qualification rates and finish times have evolved across the three-year period. The dataset spans races from the 2022, 2023, and 2024 qualifying cycles, with a notable spike in participation in 2023 likely reflecting post-COVID recovery in the running community.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+yearly_summary <- results_full %>%
+  filter(!is.na(qualified)) %>%
+  group_by(Year) %>%
+  summarise(
+    total_runners = n(),
+    qual_rate = mean(qualified),
+    median_finish = median(Finish) / 60,     # in minutes
+    mean_finish = mean(Finish) / 60,
+    total_races = n_distinct(Race)
+  )
+
+yearly_summary %>%
+  mutate(
+    qual_rate = scales::percent(qual_rate, accuracy = 0.1)
+  ) %>%
+  rename(
+    Year = Year,
+    `Total Runners` = total_runners,
+    `Qualification Rate` = qual_rate,
+    `Median Finish (min)` = median_finish,
+    `Mean Finish (min)` = mean_finish,
+    `Total Races` = total_races
+  ) %>%
+  knitr::kable(
+    booktabs = TRUE,
+    caption = "Yearly summary of qualification rates and finish times"
+  )
+
+yearly_by_group <- results_full %>%
+  filter(!is.na(qualified)) %>%
+  group_by(Year, Gender, `Age Bracket`) %>%
+  summarise(
+    total_runners = n(),
+    qual_rate = mean(qualified),
+    median_finish_min = median(Finish) / 60,
+    .groups = "drop"
+  )
+```
+
+## Qualification Rate and Finish Time by Year and Group
+
+Qualification rates rose from 11.8% in 2022 to 14.6% in 2024, accompanied by a 7-minute drop in median finish times. The following charts break these trends down by gender and age group.
+
+```{r, echo = FALSE, fig.width=7, fig.height=4, message = FALSE, warning = FALSE}
+yearly_by_group %>%
+  group_by(Year, Gender) %>%
+  summarise(qual_rate = mean(qual_rate), .groups = "drop") %>%
+  ggplot(aes(x = Year, y = qual_rate, color = Gender)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(breaks = c(2022, 2023, 2024)) +
+  labs(title = "Boston Marathon Qualification Rate by Gender (2022-2024)",
+       y = "Qualification Rate", x = "Year") +
+  theme_minimal()
+```
+
+```{r, echo = FALSE, fig.width=7, fig.height=4, message = FALSE, warning = FALSE}
+yearly_by_group %>%
+  mutate(age_group_broad = case_when(
+    `Age Bracket` %in% c("Under 35", "35-39") ~ "Under 40",
+    `Age Bracket` %in% c("40-44", "45-49")    ~ "40-49",
+    `Age Bracket` %in% c("50-54", "55-59")    ~ "50-59",
+    TRUE                                        ~ "60+"
+  )) %>%
+  group_by(Year, age_group_broad) %>%
+  summarise(median_finish_min = median(median_finish_min), .groups = "drop") %>%
+  ggplot(aes(x = Year, y = median_finish_min, color = age_group_broad)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = c(2022, 2023, 2024)) +
+  labs(title = "Median Finish Time by Age Group (2022-2024)",
+       y = "Median Finish Time (minutes)", x = "Year",
+       color = "Age Group") +
+  theme_minimal()
+```
+
+```{r, echo = FALSE, fig.width=7, fig.height=4, message = FALSE, warning = FALSE}
+yearly_by_group %>%
+  mutate(age_group_broad = case_when(
+    `Age Bracket` %in% c("Under 35", "35-39") ~ "Under 40",
+    `Age Bracket` %in% c("40-44", "45-49")    ~ "40-49",
+    `Age Bracket` %in% c("50-54", "55-59")    ~ "50-59",
+    TRUE                                        ~ "60+"
+  )) %>%
+  group_by(Year, age_group_broad) %>%
+  summarise(qual_rate = mean(qual_rate), .groups = "drop") %>%
+  ggplot(aes(x = Year, y = qual_rate, color = age_group_broad)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  scale_x_continuous(breaks = c(2022, 2023, 2024)) +
+  labs(title = "Qualification Rate by Age Group (2022-2024)",
+       y = "Qualification Rate", x = "Year",
+       color = "Age Group") +
+  theme_minimal()
+```
+
+```{r, echo = FALSE, fig.width=7, fig.height=5, message = FALSE, warning = FALSE}
+yearly_summary %>%
+  ggplot(aes(x = factor(Year), y = total_runners)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = scales::comma(total_runners)), vjust = -0.5) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Total Marathon Finishers in Dataset (2022-2024)",
+       y = "Number of Runners", x = "Year") +
+  theme_minimal()
+```
+\clearpage
+
+# Race-Level Analysis
+
+Not all qualifying races are equal. Larger, more competitive races tend to attract faster runners, and certain courses are known for being flat and fast. The following analysis examines which races produce the highest qualification rates among runners with at least 500 finishers.
+
+```{r, echo=FALSE, fig.width=8, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+race_qual_rates <- results_full %>%
+  filter(!is.na(qualified)) %>%
+  group_by(Race) %>%
+  summarise(
+    total_runners = n(),
+    qual_rate = mean(qualified),
+    .groups = "drop"
+  ) %>%
+  filter(total_runners >= 500) %>%
+  slice_max(order_by = qual_rate, n = 10) %>%
+  mutate(
+    Race_short = case_when(
+      Race == "AbbottWMM Wanda Age Group World Championship" ~ "AbbottWMM Wanda AG Championship",
+      Race == "The Light At The End of the Tunnel" ~ "Light at the End Tunnel",
+      TRUE ~ Race
+    ),
+    Race_short = forcats::fct_reorder(Race_short, qual_rate)
+  )
+
+ggplot(race_qual_rates, aes(x = Race_short, y = qual_rate)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "Top 10 Races by Qualification Rate",
+    x = NULL,
+    y = "Qualification Rate"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 8),
+    plot.title = element_text(size = 11),
+    plot.margin = margin(5.5, 5.5, 5.5, 80)
+  )
+```
+
+# Finish Time Distributions
+
+The density plots below show how finish time distributions have shifted across years, broken down by gender. A leftward shift indicates faster finishing times overall, which is consistent with the trend observed in the yearly summary.
+
+```{r, echo = FALSE, fig.width=7, fig.height=4}
+results_full %>%
+  filter(!is.na(qualified)) %>%
+  mutate(finish_min = Finish / 60) %>%
+  ggplot(aes(x = finish_min, fill = Gender)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~Year) +
+  labs(title = "Finish Time Distribution by Gender and Year",
+       x = "Finish Time (minutes)", y = "Density") +
+  theme_minimal()
+```
+
+# How Close Were Non-Qualifiers?
+
+One of the most interesting questions in this dataset is how close 
+non-qualifiers came to meeting their standard. If most missed by 30+ minutes, the standard is a hard ceiling. If many missed by under 5 minutes, it suggests a large pool of runners on the cusp who might qualify with modest improvement.
+
+```{r, echo=FALSE, fig.width=8, fig.height=4.5, fig.align='center', message=FALSE, warning=FALSE}
+close_summary <- results_full %>%
+  filter(!is.na(qualified), qualified == FALSE) %>%
+  mutate(minutes_missed = (Finish - Standard) / 60) %>%
+  filter(minutes_missed <= 60) %>%
+  mutate(
+    missed_bucket = case_when(
+      minutes_missed <= 5  ~ "Within 5 min",
+      minutes_missed <= 10 ~ "5-10 min",
+      minutes_missed <= 15 ~ "10-15 min",
+      minutes_missed <= 30 ~ "15-30 min",
+      TRUE ~ "30+ min"
+    )
+  ) %>%
+  count(missed_bucket) %>%
+  mutate(
+    pct = n / sum(n),
+    missed_bucket = factor(
+      missed_bucket,
+      levels = c("Within 5 min", "5-10 min", "10-15 min", "15-30 min", "30+ min")
+    )
+  )
+
+ggplot(close_summary, aes(x = missed_bucket, y = pct)) +
+  geom_col(fill = "tomato") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "How Close Were Non-Qualifiers to the BQ Standard?",
+    x = NULL,
+    y = "Percentage of Non-Qualifiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 9),
+    plot.title = element_text(size = 11),
+    plot.margin = margin(5.5, 5.5, 5.5, 50)
+  )
+```
+\clearpage
+
+# Logistic Regression Models
+
+To quantify the relationship between runner demographics and qualification probability, we fit a series of logistic regression models. We model qualification as a binary outcome (met BQ standard: yes/no) using age, gender, and year as predictors.
+
+Note: finish time was intentionally excluded from the model. Since 
+qualification is deterministically defined as finish time relative to the BQ standard, including it would create target leakage and the model would simply rediscover the cutoff formula rather than learning anything meaningful. This is a known limitation and the models below should be interpreted as capturing demographic and temporal patterns in qualification rather than providing strong individual-level predictions.
+
+Due to the dataset size of over 1 million rows, models were trained on a stratified random sample of 200,000 runners and evaluated on a held-out test set.
+
+## Model Comparison
+
+We fit three progressively richer models:
+
+- **Model 1**: Age + Gender 
+- **Model 2**: Age + Age² + Gender (allows non-linear age effect)  
+- **Model 3**: Age + Age² + Gender + Year (adds temporal trend)
+
+```{r, echo = FALSE}
+set.seed(42)
+
+model_df <- results_full %>%
+  filter(!is.na(qualified)) %>%
+  mutate(
+    qualified = as.integer(qualified),  # 1/0
+    Age_centered = Age - mean(Age, na.rm = TRUE),
+    Gender = as.factor(Gender),
+    Year = as.factor(Year),
+    Race = as.factor(Race)
+  ) %>%
+  select(qualified, Age_centered, Gender, Year, Race)
+
+model_df_samp <- model_df %>%
+  slice_sample(n = 200000)
+
+idx <- sample.int(nrow(model_df_samp), size = 0.8 * nrow(model_df_samp))
+train <- model_df_samp[idx, ]
+test  <- model_df_samp[-idx, ]
+
+model1 <- glm(
+  qualified ~ Age_centered + Gender,
+  data = train,
+  family = binomial
+)
+
+model1 %>%
+  broom::tidy(conf.int = FALSE) %>%
+  mutate(
+    odds_ratio = round(exp(estimate), 3),
+    p.value = format_p(p.value)
+  ) %>%
+  select(term, odds_ratio, p.value) %>%
+  rename(
+    Term = term,
+    `Odds Ratio` = odds_ratio,
+    `p-value` = p.value
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Model 1 coefficients"
+  )
+```
+```{r, echo = FALSE}
+model2 <- glm(
+  qualified ~ Age_centered + I(Age_centered^2) + Gender,
+  data = train,
+  family = binomial
+)
+```
+
+```{r, echo = FALSE}
+model3 <- glm(
+  qualified ~ Age_centered + I(Age_centered^2) + Gender + Year,
+  data = train,
+  family = binomial
+)
+
+anova(model1, model2, test = "Chisq") %>%
+  mutate(`Pr(>Chi)` = format_p(`Pr(>Chi)`)) %>%
+  kable(
+    digits = 3,
+    booktabs = TRUE,
+    caption = "Model 1 vs Model 2: Chi-square test"
+  )
+
+anova(model2, model3, test = "Chisq") %>%
+  mutate(`Pr(>Chi)` = format_p(`Pr(>Chi)`)) %>%
+  kable(
+    digits = 3,
+    booktabs = TRUE,
+    caption = "Model 2 vs Model 3: Chi-square test"
+  )
+
+AIC(model1, model2, model3) %>%
+  kable(
+    digits = 1,
+    booktabs = TRUE,
+    caption = "AIC comparison across models"
+  )
+```
+
+## Coefficients and Odds Ratios
+
+The table below shows the odds ratios from Model 3. An odds ratio above 1 indicates the predictor is associated with a higher probability of qualifying.
+
+```{r, echo = FALSE}
+model3 %>%
+  broom::tidy(conf.int = FALSE) %>%
+  mutate(
+    odds_ratio = round(exp(estimate), 3),
+    ci_low     = round(exp(estimate - 1.96 * std.error), 3),
+    ci_high    = round(exp(estimate + 1.96 * std.error), 3),
+    p.value    = format_p(p.value)
+  ) %>%
+  select(term, odds_ratio, ci_low, ci_high, p.value) %>%
+  arrange(desc(odds_ratio)) %>%
+  rename(
+    Term = term,
+    `Odds Ratio` = odds_ratio,
+    `95% CI Low` = ci_low,
+    `95% CI High` = ci_high,
+    `p-value` = p.value
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Model 3 odds ratios"
+  )
+```
+\clearpage
+
+## Mixed Effects Model
+
+To account for the fact that qualification rates vary across races 
+(beyond what race size alone captures), we fit a mixed effects logistic regression with a random intercept for race.
+
+```{r, echo = FALSE}
+model_no_race_re <- glm(
+  qualified ~ Age_centered + I(Age_centered^2) + Gender + Year,
+  data = train,
+  family = binomial
+)
+
+mixed_model <- glmer(
+  qualified ~ Age_centered + I(Age_centered^2) + Gender + Year + (1 | Race),
+  data = train,
+  family = binomial,
+  nAGQ = 0,
+  control = glmerControl(optimizer = "bobyqa")
+)
+
+broom.mixed::tidy(mixed_model, effects = "fixed") %>%
+  mutate(
+    odds_ratio = round(exp(estimate), 3),
+    p.value = format_p(p.value)
+  ) %>%
+  select(term, odds_ratio, p.value) %>%
+  rename(
+    Term = term,
+    `Odds Ratio` = odds_ratio,
+    `p-value` = p.value
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Mixed effects model fixed effects"
+  )
+
+anova(model_no_race_re, mixed_model, test = "Chisq") %>%
+  mutate(`Pr(>Chi)` = format_p(`Pr(>Chi)`)) %>%
+  kable(
+    digits = 3,
+    booktabs = TRUE,
+    caption = "Fixed effects model vs Mixed effects model: Chi-square test"
+  )
+```
+The mixed effects model reveals substantial variation in qualification rates across races (random intercept variance = 0.96), confirming that course selection is an important factor beyond demographics alone. Notably, the quadratic age term loses significance once race-level variation is accounted for, suggesting that the curved age effect observed in earlier models may partially reflect differences in which age groups tend to enter faster races rather than a true nonlinear biological effect.
+
+## Interaction Effects
+
+We test whether the effect of age on qualification differs between men and women by adding an age × gender interaction term. The visualization below shows predicted qualification probability across the age range for each gender, holding year constant at 2023.
+
+```{r, echo = FALSE, fig.width=7, fig.height=4.5}
+model4 <- glm(
+  qualified ~ Age_centered * Gender + I(Age_centered^2) + Year,
+  data = train,
+  family = binomial
+)
+
+model4 %>%
+  broom::tidy(conf.int = FALSE) %>%
+  mutate(
+    odds_ratio = round(exp(estimate), 3),
+    p.value = format_p(p.value)
+  ) %>%
+  select(term, odds_ratio, p.value) %>%
+  rename(
+    Term = term,
+    `Odds Ratio` = odds_ratio,
+    `p-value` = p.value
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Model 4 coefficients with interaction term"
+  )
+
+anova(model3, model4, test = "Chisq") %>%
+  mutate(`Pr(>Chi)` = format_p(`Pr(>Chi)`)) %>%
+  kable(
+    digits = 3,
+    booktabs = TRUE,
+    caption = "Model 3 vs Model 4: Interaction test"
+  )
+
+expand.grid(
+  Age_centered = seq(-20, 30, by = 1),
+  Gender = c("M", "F"),
+  Year = "2023"
+) %>%
+  mutate(
+    pred_prob = predict(model4, newdata = ., type = "response"),
+    Age = Age_centered + mean(results_full$Age, na.rm = TRUE)
+  ) %>%
+  ggplot(aes(x = Age, y = pred_prob, color = Gender)) +
+  geom_line(size = 1.2) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Predicted Qualification Probability by Age and Gender",
+       x = "Age", y = "Predicted Probability of Qualifying") +
+  theme_minimal()
+```
+
+## Model Evaluation
+
+The final model is evaluated on the held-out test set using a classification threshold of 0.14, chosen to reflect the true qualification base rate of 13.7%.
+
+```{r, echo = FALSE, fig.width=7, fig.height=5, message = FALSE}
+pred_probs <- predict(model4, newdata = test, type = "response")
+actual <- test$qualified
+
+# Use 0.14 threshold to match true qualification rate
+pred_class <- ifelse(pred_probs > 0.14, 1, 0)
+
+conf_mat <- table(Predicted = pred_class, Actual = actual)
+
+conf_mat_df <- as.data.frame.matrix(conf_mat)
+conf_mat_df <- tibble::rownames_to_column(conf_mat_df, var = "Predicted")
+
+kable(
+  conf_mat_df,
+  booktabs = TRUE,
+  caption = "Confusion matrix on held-out test set"
+)
+
+metrics <- tibble(
+  Accuracy  = mean(pred_class == actual),
+  Precision = ifelse(sum(pred_class == 1) == 0, NA,
+                     sum(pred_class == 1 & actual == 1) / sum(pred_class == 1)),
+  Recall    = sum(pred_class == 1 & actual == 1) / sum(actual == 1)
+) %>%
+  mutate(F1 = 2 * Precision * Recall / (Precision + Recall))
+
+metrics %>%
+  mutate(across(everything(), ~ round(., 3))) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Model evaluation metrics on held-out test set"
+  )
+
+roc_obj <- roc(actual, pred_probs)
+auc_value <- as.numeric(auc(roc_obj))
+
+plot(
+  roc_obj,
+  main = paste("ROC Curve - AUC:", round(auc_value, 3)),
+  legacy.axes = TRUE
+)
+```
+The held-out test set AUC is **`r round(auc_value, 3)`**.
+
+# Conclusion
+
+This analysis examined Boston Marathon qualification trends across 1,081,649 runners from 2022 to 2024. 
+Key findings include:
+
+- Qualification rates increased from 11.8% to 14.6% over the study period, accompanied by a 7-minute drop in median finish times.
+- Race participation nearly doubled in 2023, likely reflecting post-COVID recovery in the running community.
+- Older runners qualify at higher rates, reflecting more lenient age-graded standards, a trend confirmed and quantified by the logistic regression models.
+- The age × gender interaction was not statistically significant (p=0.118), suggesting the effect of age on qualification probability is similar across genders after controlling for year.
+- Year is a significant predictor, with 2023 and 2024 showing higher qualification odds than 2022.
+- The logistic regression achieves an AUC of 0.56 using only demographic and temporal features. While modest, this is expected. Without finish time, which cannot be included without introducing target leakage, demographic features alone have limited predictive power. The primary value of this analysis lies in the trend analysis and structural insights rather than individual prediction.
