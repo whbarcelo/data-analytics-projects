@@ -11,7 +11,7 @@ Each project includes code, visualizations, and written analysis interpreting re
 ### 1. Economic Indicators and S&P 500 Sector Analysis - SQL + Python
 SQL-based analysis exploring the relationship between macroeconomic indicators and S&P 500 sector performance from 2000 to 2025.
 
-Folder: [S&P 500 Sector Analysis](Projects/SQL/S&P500SectorAnalysis)
+Folder: [S&P 500 Sector Analysis](Projects/SQL/S&P%20500%20Sector%20Analysis)
 
 File: [Jupyter Notebook](Projects/SQL/economics_analysis.ipynb)
 
