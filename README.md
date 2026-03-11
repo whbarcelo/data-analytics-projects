@@ -11,9 +11,9 @@ Each project includes code, visualizations, and written analysis interpreting re
 ### 1. Economic Indicators and S&P 500 Sector Analysis - SQL + Python
 SQL-based analysis exploring the relationship between macroeconomic indicators and S&P 500 sector performance from 2000 to 2025.
 
-Folder: [Project Folder](Projects/)
+Folder: [Project Folder](Projects/SQL)
 
-File: [Jupyter Notebook](Projects/economics_analysis.ipynb)
+File: [Jupyter Notebook](Projects/SQL/economics_analysis.ipynb)
 
 Highlights:
 - Designed a 4-table SQLite database combining FRED macroeconomic data with S&P 500 sector ETF data
@@ -27,9 +27,9 @@ Highlights:
 ### 2. Boston Marathon Qualification Analysis – R + ggplot2
 Analysis of Boston Marathon qualification trends across 1,081,649 runners from 762 qualifying races between 2022 and 2024.
 
-Folder: [Project Folder](Projects/)
+Folder: [Project Folder](Projects/R)
 
-File: [R Markdown](Projects/marathon_qualification_analysis.rmd) | [PDF Report](Projects/marathon_qualification_analysis.pdf)
+File: [R Markdown](Projects/R/marathon_qualification_analysis.rmd) | [PDF Report](Projects/R/marathon_qualification_analysis.pdf)
 
 Highlights:
 - Analyzed qualification rates and finish time trends across 532 races by year, gender, and age group
@@ -43,9 +43,9 @@ Highlights:
 ### 3. Student Exam Score Prediction – Python (scikit-learn)
 Prediction model using the UCI Student Performance dataset.
 
-Folder: [Project Folder](Projects/)
+Folder: [Project Folder](Projects/Python)
 
-Notebook: [Jupyter Notebook](Projects/student_scores_regression.ipynb)
+Notebook: [Jupyter Notebook](Projects/Python/student_scores_regression.ipynb)
 
 Highlights:
 - Built regression models to predict final exam score ("G3")
