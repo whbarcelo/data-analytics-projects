@@ -43,7 +43,7 @@ Highlights:
 ### 3. Student Exam Score Prediction – Python (scikit-learn)
 Prediction model using the UCI Student Performance dataset.
 
-Folder: [Student Exam Score Prediction](Projects/Python)
+Folder: [Student Exam Score Prediction](Projects/Python/Student%20Exam%20Score%20Regression/student_scores_regression.ipynb)
 
 Notebook: [Jupyter Notebook](Projects/Python/student_scores_regression.ipynb)
 
