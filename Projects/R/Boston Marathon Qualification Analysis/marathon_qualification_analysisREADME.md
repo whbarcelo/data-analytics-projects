@@ -1,5 +1,5 @@
 # Boston Marathon Qualification Analysis - R + ggplot2
-Goal: Analyze Boston Marathon qualification trends across 1,081,649 runners from 762 qualifying races between 2022 and 2024.  
+Goal: Analyze Boston Marathon qualification trends across 1,081,649 runners from 532 qualifying races between 2022 and 2024.  
 Dataset: Kaggle (Race-level finisher results, race metadata, BAA qualification standards by age and gender bracket)
 
 ---
