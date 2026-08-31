@@ -25,7 +25,7 @@ Highlights:
 
 ---
 ### 2. Boston Marathon Qualification Analysis – R + ggplot2
-Analysis of Boston Marathon qualification trends across 1,081,649 runners from 762 qualifying races between 2022 and 2024.
+Analysis of Boston Marathon qualification trends across 1,081,649 runners from 532 qualifying races between 2022 and 2024.
 
 Folder: [Boston Marathon Qualification Analysis](Projects/R/Boston%20Marathon%20Qualification%20Analysis)
 
