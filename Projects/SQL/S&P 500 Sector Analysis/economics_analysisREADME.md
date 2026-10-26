@@ -19,24 +19,27 @@ Dataset: FRED (CPI, GDP, Unemployment, Federal Funds Rate) + Yahoo Finance S&P 5
 | 1 | Average sector returns by year | GROUP BY, aggregations, strftime |
 | 2 | Top companies by market cap per sector | RANK(), PARTITION BY, window functions |
 | 3 | Macro data joined with sector performance by quarter | JOIN, CASE, quarterly aggregation |
-| 4 | Sectors that outperform during high inflation | CTE, subquery, CASE |
+| 4 | Sectors by CPI regime | CTE, subquery, CASE |
 | 5 | Rolling 4-quarter GDP growth vs market returns | Chained CTEs, ROWS BETWEEN window frame |
 | 6 | Sector rankings by return/volatility ratio per economic cycle | Three chained CTEs, NULLIF, RANK() |
 
 ---
 
 ## Results
+
+Cycles are defined by each quarter’s annualized real GDP growth (Contraction < 0%, Slow 0–2%, Moderate 2–4%, Strong > 4%). Risk-adjusted return = average monthly return ÷ range of monthly returns in the quarter.
+
 | Economic Cycle | Top Sector (Risk-Adjusted) | Worst Sector (Risk-Adjusted) |
 |----------------|---------------------------|------------------------------|
-| Contraction | Consumer Discretionary | Financials |
+| Contraction | Consumer Staples | Technology |
 | Slow Growth | Healthcare | Energy |
-| Moderate Growth | Consumer Discretionary | Financials |
-| Strong Growth | Consumer Staples | Utilities |
+| Moderate Growth | Industrials | Energy |
+| Strong Growth | Technology | Utilities |
 
-- Technology outperformed all sectors during high inflation periods, contradicting conventional wisdom
-- Energy had the highest raw returns during strong growth (+0.70%) but ranked last on a risk-adjusted basis due to extreme volatility
-- Financials were hit hardest during contractions, consistent with the 2008 financial crisis
-- Consumer Staples delivered the best risk-adjusted returns during strong economic growth
+- Every sector posted a negative average return during contractions; Consumer Staples and Healthcare ranked first and second on a risk-adjusted basis
+- Technology had the most cyclical profile (first on a risk-adjusted basis during strong growth and last during contractions)
+- Energy had the highest return volatility in three of the four cycles and ranked last on a risk-adjusted basis during slow and moderate growth
+- Technology had the highest average return when CPI was more than 10% above its 2000–2025 average (roughly late 2020 onward)
 
 ---
 
